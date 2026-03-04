@@ -6,6 +6,7 @@ const route = useRoute()
 const navItems = [
   { path: '/chat', label: 'Chat', icon: '💬' },
   { path: '/agents', label: 'Agents', icon: '🤖' },
+  { path: '/store', label: 'Store', icon: '📦' },
   { path: '/schedules', label: 'Schedules', icon: '⏰' },
   { path: '/sessions', label: 'Sessions', icon: '📋' },
 ]

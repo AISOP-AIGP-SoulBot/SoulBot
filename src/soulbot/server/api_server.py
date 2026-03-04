@@ -9,6 +9,9 @@ from __future__ import annotations
 import json
 import shutil
 import sys
+import time
+import urllib.request
+import urllib.error
 from pathlib import Path
 from typing import Optional
 
@@ -54,6 +57,15 @@ class DeleteAisopRequest(BaseModel):
 
 class AddFromLibraryRequest(BaseModel):
     group: str
+
+
+class DownloadFromStoreRequest(BaseModel):
+    program: str
+
+
+class InstallFromStoreRequest(BaseModel):
+    program: str
+    agent_name: str
 
 
 # ---------------------------------------------------------------------------
@@ -108,6 +120,14 @@ def create_app(
     _loader: AgentLoader | None = None
 
     runners: dict[str, Runner] = {}
+
+    # ---- AIGP Store cache -----------------------------------------------
+    _store_cache: dict = {"data": None, "expires": 0.0}
+    GITHUB_REPO = "AISOP-AIGP-SoulBot/AIGP-Store"
+    GITHUB_API = f"https://api.github.com/repos/{GITHUB_REPO}/contents"
+    GITHUB_STORE_API = f"{GITHUB_API}/aigp_store"
+    GITHUB_RAW = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/aigp_store"
+    CACHE_TTL = 300  # 5 minutes
 
     if agents:
         for name, agent in agents.items():
@@ -291,6 +311,226 @@ def create_app(
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(src, dest)
         return {"group": req.group, "status": "added"}
+
+    # ---- AIGP Store endpoints -------------------------------------------
+
+    @app.get("/aigp-store/programs")
+    async def list_store_programs():
+        """List available AIGP programs from the GitHub AIGP-Store repo."""
+        import logging
+        _log = logging.getLogger(__name__)
+
+        now = time.time()
+        if _store_cache["data"] is not None and now < _store_cache["expires"]:
+            return _store_cache["data"]
+
+        try:
+            req = urllib.request.Request(
+                GITHUB_STORE_API,
+                headers={"Accept": "application/vnd.github.v3+json",
+                         "User-Agent": "SoulBot/1.0"},
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                contents = json.loads(resp.read().decode())
+        except (urllib.error.URLError, urllib.error.HTTPError) as exc:
+            _log.warning("Failed to fetch AIGP Store listing: %s", exc)
+            raise HTTPException(502, f"Failed to reach GitHub API: {exc}")
+
+        programs = []
+        for item in contents:
+            if item.get("type") != "dir":
+                continue
+            name = item["name"]
+            if not name.endswith("_aigp"):
+                continue
+            meta = _fetch_aigp_metadata(name, _log)
+            programs.append(meta)
+
+        _store_cache["data"] = programs
+        _store_cache["expires"] = now + CACHE_TTL
+        return programs
+
+    def _fetch_aigp_metadata(program_name: str, _log) -> dict:
+        """Fetch and parse AIGP.md YAML frontmatter for a program."""
+        import yaml
+
+        meta = {
+            "name": program_name,
+            "version": "",
+            "pattern": "",
+            "summary": "",
+            "tools": [],
+            "quality_grade": "",
+            "quality_score": 0.0,
+            "trust_level": "",
+            "module_count": 0,
+            "github_url": f"https://github.com/{GITHUB_REPO}/tree/main/aigp_store/{program_name}",
+        }
+
+        try:
+            url = f"{GITHUB_RAW}/{program_name}/AIGP.md"
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "SoulBot/1.0"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                content = resp.read().decode()
+        except (urllib.error.URLError, urllib.error.HTTPError):
+            _log.debug("No AIGP.md found for %s", program_name)
+            return meta
+
+        # Parse YAML frontmatter (between --- delimiters)
+        try:
+            if content.startswith("---"):
+                parts = content.split("---", 2)
+                if len(parts) >= 3:
+                    data = yaml.safe_load(parts[1])
+                    if isinstance(data, dict):
+                        meta["name"] = data.get("name", program_name)
+                        meta["version"] = str(data.get("version", ""))
+                        meta["pattern"] = str(data.get("pattern", ""))
+                        meta["summary"] = str(data.get("summary", ""))
+
+                        # trust_level.level → "T3"
+                        tl = data.get("trust_level")
+                        if isinstance(tl, dict) and "level" in tl:
+                            meta["trust_level"] = f"T{tl['level']}"
+                        elif isinstance(tl, (int, str)):
+                            meta["trust_level"] = f"T{tl}"
+
+                        # quality.grade / quality.weighted_score
+                        quality = data.get("quality")
+                        if isinstance(quality, dict):
+                            meta["quality_grade"] = str(quality.get("grade", ""))
+                            try:
+                                meta["quality_score"] = float(quality.get("weighted_score", 0))
+                            except (ValueError, TypeError):
+                                pass
+
+                        # tools[] → extract name from each
+                        tools = data.get("tools")
+                        if isinstance(tools, list):
+                            meta["tools"] = [
+                                t["name"] for t in tools
+                                if isinstance(t, dict) and "name" in t
+                            ]
+
+                        # modules[] → count
+                        modules = data.get("modules")
+                        if isinstance(modules, list):
+                            meta["module_count"] = len(modules)
+        except Exception as exc:
+            _log.debug("Failed to parse AIGP.md YAML for %s: %s", program_name, exc)
+
+        return meta
+
+    @app.post("/aigp-store/download")
+    async def download_from_store(req: DownloadFromStoreRequest):
+        """Download an AIGP program from GitHub to local aigp_store/ library."""
+        import logging
+        _log = logging.getLogger(__name__)
+
+        if _agents_dir is None:
+            raise HTTPException(400, "Requires agents_dir mode")
+
+        if ".." in req.program or "/" in req.program or "\\" in req.program:
+            raise HTTPException(400, "Invalid program name")
+        if not req.program.endswith("_aigp"):
+            raise HTTPException(400, "Program name must end with '_aigp'")
+
+        dest = _agents_dir / "aigp_store" / req.program
+        if dest.exists():
+            raise HTTPException(409, f"'{req.program}' already exists in local library")
+
+        try:
+            files_count = _download_github_dir(
+                f"{GITHUB_STORE_API}/{req.program}", dest, _log
+            )
+        except Exception as exc:
+            if dest.exists():
+                shutil.rmtree(dest, ignore_errors=True)
+            _log.error("Failed to download %s: %s", req.program, exc)
+            raise HTTPException(502, f"Failed to download from GitHub: {exc}")
+
+        return {
+            "program": req.program,
+            "files_downloaded": files_count,
+            "status": "downloaded",
+        }
+
+    @app.post("/aigp-store/install")
+    async def install_from_store(req: InstallFromStoreRequest):
+        """Download an AIGP program from GitHub and install to agent's aigp/ dir."""
+        import logging
+        _log = logging.getLogger(__name__)
+
+        if _agents_dir is None:
+            raise HTTPException(400, "Requires agents_dir mode")
+        if req.agent_name not in runners:
+            raise HTTPException(404, f"Agent '{req.agent_name}' not found")
+
+        if ".." in req.program or "/" in req.program or "\\" in req.program:
+            raise HTTPException(400, "Invalid program name")
+        if not req.program.endswith("_aigp"):
+            raise HTTPException(400, "Program name must end with '_aigp'")
+
+        dest = _agents_dir / req.agent_name / "aigp" / req.program
+        if dest.exists():
+            raise HTTPException(
+                409, f"'{req.program}' already exists in agent '{req.agent_name}'"
+            )
+
+        try:
+            files_count = _download_github_dir(
+                f"{GITHUB_STORE_API}/{req.program}", dest, _log
+            )
+        except Exception as exc:
+            if dest.exists():
+                shutil.rmtree(dest, ignore_errors=True)
+            _log.error("Failed to install %s: %s", req.program, exc)
+            raise HTTPException(502, f"Failed to download from GitHub: {exc}")
+
+        return {
+            "program": req.program,
+            "agent": req.agent_name,
+            "files_installed": files_count,
+            "status": "installed",
+        }
+
+    def _download_github_dir(api_url: str, dest: Path, _log) -> int:
+        """Recursively download a directory from GitHub API."""
+        req = urllib.request.Request(
+            api_url,
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "User-Agent": "SoulBot/1.0",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            items = json.loads(resp.read().decode())
+
+        dest.mkdir(parents=True, exist_ok=True)
+        count = 0
+
+        for item in items:
+            name = item["name"]
+            if item["type"] == "file":
+                download_url = item.get("download_url")
+                if not download_url:
+                    continue
+                file_req = urllib.request.Request(
+                    download_url,
+                    headers={"User-Agent": "SoulBot/1.0"},
+                )
+                with urllib.request.urlopen(file_req, timeout=15) as file_resp:
+                    file_content = file_resp.read()
+                (dest / name).write_bytes(file_content)
+                count += 1
+                _log.debug("Downloaded: %s", dest / name)
+            elif item["type"] == "dir":
+                sub_url = item.get("url", f"{api_url}/{name}")
+                count += _download_github_dir(sub_url, dest / name, _log)
+
+        return count
 
     # ---- Session CRUD ---------------------------------------------------
 

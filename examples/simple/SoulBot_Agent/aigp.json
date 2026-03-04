@@ -1,0 +1,12 @@
+[
+  {
+    "name": "aigp_creator_evolution",
+    "summary": "AIGP Creator — creates, evolves, discovers, deprecates, validates, and simulates AIGP programs through a 14-stage pipeline.",
+    "entry": "aigp/aigp_creator_evolution_aigp/main.aisop.json"
+  },
+  {
+    "name": "soulbot_chat",
+    "summary": "SoulBot Chat — core conversation and user cognition engine with proactive companion behaviors.",
+    "entry": "aigp/soulbot_chat_aigp/main.aisop.json"
+  }
+]

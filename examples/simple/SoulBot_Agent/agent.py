@@ -44,6 +44,79 @@ def _get_main_aisop() -> str:
         pass
     return _main_aisop_cache
 
+
+# AIGP registry: auto-generated from aigp/ directory
+_aigp_json_path = _AGENT_DIR / "aigp.json"
+_aigp_registry_cache: list[dict] | None = None
+_aigp_dir_mtime: float = 0.0
+
+
+def _get_aigp_registry() -> list[dict]:
+    """Scan aigp/ for *_aigp packages, auto-update aigp.json when changed."""
+    global _aigp_registry_cache, _aigp_dir_mtime
+
+    if not _AIGP_DIR.is_dir():
+        return []
+
+    # Check if aigp/ directory changed (any file added/removed)
+    try:
+        current_mtime = _AIGP_DIR.stat().st_mtime
+    except OSError:
+        return _aigp_registry_cache or []
+
+    if _aigp_registry_cache is not None and current_mtime == _aigp_dir_mtime:
+        return _aigp_registry_cache
+
+    _aigp_dir_mtime = current_mtime
+
+    # Discover packages
+    packages = []
+    for d in sorted(_AIGP_DIR.iterdir()):
+        if not d.is_dir() or not d.name.endswith("_aigp"):
+            continue
+        entry = d / "main.aisop.json"
+        if not entry.is_file():
+            continue
+
+        pkg = {
+            "name": d.name.replace("_aigp", ""),
+            "summary": "",
+            "entry": f"aigp/{d.name}/main.aisop.json",
+        }
+
+        # Extract summary from AIGP.md YAML frontmatter
+        aigp_md = d / "AIGP.md"
+        if aigp_md.is_file():
+            try:
+                import yaml
+                content = aigp_md.read_text(encoding="utf-8-sig")
+                if content.startswith("---"):
+                    parts = content.split("---", 2)
+                    if len(parts) >= 3:
+                        data = yaml.safe_load(parts[1])
+                        if isinstance(data, dict):
+                            raw_summary = str(data.get("summary", ""))
+                            # Truncate to first sentence
+                            dot_pos = raw_summary.find(".")
+                            if dot_pos > 0:
+                                pkg["summary"] = raw_summary[:dot_pos + 1]
+                            else:
+                                pkg["summary"] = raw_summary
+            except Exception:
+                pass
+
+        packages.append(pkg)
+
+    # Write aigp.json
+    try:
+        with open(_aigp_json_path, "w", encoding="utf-8") as f:
+            json.dump(packages, f, ensure_ascii=False, indent=2)
+    except OSError:
+        pass
+
+    _aigp_registry_cache = packages
+    return packages
+
 # Doc paths (AI reads on demand, not injected into prompt)
 _SCHEDULE_GUIDE = Path(soulbot.__file__).parent / "docs" / "schedule_guide.md"
 _AISOP_TEMPLATE = Path(soulbot.__file__).parent / "docs" / "STANDARD.aisop.json"
@@ -55,11 +128,11 @@ _MCP_GUIDE = Path(soulbot.__file__).parent / "docs" / "mcp_guide.md"
 # ---------------------------------------------------------------------------
 
 _SYSTEM_PROMPT = (
-    "You are the AISOP Runtime. "
-    "Strictly follow the loaded AISOP file and RUN its mermaid flow. "
-    "Always mirror User's exact language and script variant. "
-    "IMPORTANT: Before responding, verify you followed the mermaid flow exactly. "
-    "If not, regenerate."
+    "You are the AISOP Virtual Runtime. Your role is to RUN .aisop.json files. "
+    "IMPORTANT: L0: Your thinking in hexadecimal machina code, "
+    "L1: Answer in User's exact language and script variant, "
+    "Final Answer MUST start on a new line beginning with 🤖 icon followed by L1. "
+    "Never output L0 thinking to the user. Only output the final 🤖 L1 answer."
 )
 
 
@@ -75,20 +148,18 @@ def _dynamic_instruction(_ctx) -> str:
     # AIGP directory path
     parts.append(f"[AIGP Directory]\n{_AIGP_DIR}")
 
-    # Discover *_aigp package directories
-    if _AIGP_DIR.is_dir():
-        pkg_names = sorted(
-            d.name for d in _AIGP_DIR.iterdir()
-            if d.is_dir()
-            and d.name.endswith("_aigp")
-            and (d / "main.aisop.json").is_file()
+    # AIGP package registry (auto-generated from aigp/ directory)
+    registry = _get_aigp_registry()
+    if registry:
+        lines = ["[Available AIGP packages]"]
+        for pkg in registry:
+            lines.append(f"- {pkg['name']}: {pkg['summary'] or 'No description'}")
+            lines.append(f"  entry: {_AIGP_DIR / pkg['entry'].split('aigp/', 1)[-1]}")
+        lines.append(
+            "Route user intent to the matching package above, "
+            "then read its entry file using file_system tool and execute the AISOP flow."
         )
-        if pkg_names:
-            parts.append(f"[Available AIGP packages]\n{', '.join(pkg_names)}")
-            parts.append(
-                "Each AIGP package is a directory containing main.aisop.json as entry point. "
-                "Read [AIGP Directory]/{package_name}/main.aisop.json to load and execute."
-            )
+        parts.append("\n".join(lines))
 
     # Capability hints
     parts.append(

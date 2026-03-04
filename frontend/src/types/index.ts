@@ -68,6 +68,19 @@ export interface AisopInfo {
   tools: string[]
 }
 
+export interface StoreProgram {
+  name: string
+  version: string
+  pattern: string
+  summary: string
+  tools: string[]
+  quality_grade: string
+  quality_score: number
+  trust_level: string
+  module_count: number
+  github_url: string
+}
+
 export interface ScheduleEntry {
   id: string
   trigger_config: {

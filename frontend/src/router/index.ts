@@ -24,6 +24,11 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/store',
+      name: 'store',
+      component: () => import('@/views/AIGPStoreView.vue'),
+    },
+    {
       path: '/schedules',
       name: 'schedules',
       component: () => import('@/views/SchedulesView.vue'),

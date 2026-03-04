@@ -21,6 +21,7 @@ export default defineConfig({
       '/run_sse': 'http://localhost:8000',
       '/run': 'http://localhost:8000',
       '/schedule': 'http://localhost:8000',
+      '/aigp-store': 'http://localhost:8000',
     },
   },
   build: {
