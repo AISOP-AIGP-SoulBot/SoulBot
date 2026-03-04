@@ -1,0 +1,83 @@
+{
+    "scoring_scale": "1-5",
+    "version": "1.0.0",
+    "snapshot_date": "2026-03-03",
+    "three_dim_test": {
+        "weighted_score": 5.000,
+        "grade": "S",
+        "cognitive": {
+            "weight": 0.25,
+            "items": "C1-C7",
+            "score": 5.000,
+            "notes": "All items scored 5. C5 node count verified after simulate 9→10 fix."
+        },
+        "intrinsic": {
+            "weight": 0.45,
+            "items": "I1-I13",
+            "score": 5.000,
+            "na_items": ["I8", "I9", "I10", "I11", "I12", "I13"],
+            "applicable_count": 7,
+            "notes": "All applicable items scored 5. I8-I13 N/A."
+        },
+        "detail": {
+            "weight": 0.30,
+            "items": "D1-D10",
+            "score": 5.000,
+            "notes": "All items scored 5. All features fully documented."
+        },
+        "multi_file": "MF1-MF16 (15 PASS / 0 FAIL / 1 N/A: MF16 not applicable — Creator is not Pattern G)",
+        "pipeline": "PL1-PL25 (25 PASS / 0 FAIL)",
+        "multi_agent": "K1-K5 (5 PASS / 0 FAIL)",
+        "simulation_categories": "A-M"
+    },
+    "simulation": {
+        "total_scenarios": 113,
+        "passed": 113,
+        "failed": 0,
+        "pass_rate": "100%",
+        "categories": {
+            "A_core_intent": 16,
+            "B_security": 13,
+            "C_quality_gate": 10,
+            "D_error_path": 10,
+            "E_edge_case": 13,
+            "F_domain_specific": 6,
+            "G_comparative": 10,
+            "H_mutation": 14,
+            "J_trust_boundary": 2,
+            "K_multi_agent": 5,
+            "L_ui_output": 2,
+            "M_tool_directory": 12
+        },
+        "result_summary": {
+            "GREEN": 113,
+            "YELLOW": 0,
+            "RED": 0
+        }
+    },
+    "regression_check": {
+        "QRG1_single_version": {
+            "delta": 0.000,
+            "baseline": 5.000,
+            "baseline_note": "initial",
+            "current": 5.000,
+            "result": "PASS (stable, no regression)"
+        },
+        "QRG3_absolute_floor": {
+            "score": 5.000,
+            "floor": 3.0,
+            "result": "PASS"
+        },
+        "QRG4_dimension": {
+            "C_delta": 0.000,
+            "I_delta": 0.000,
+            "D_delta": 0.000,
+            "result": "PASS (all dimensions stable)"
+        },
+        "QRG5_security_floor": {
+            "I2_score": 5,
+            "I8_score": "N/A",
+            "result": "PASS (I2 > 2)"
+        }
+    }
+}

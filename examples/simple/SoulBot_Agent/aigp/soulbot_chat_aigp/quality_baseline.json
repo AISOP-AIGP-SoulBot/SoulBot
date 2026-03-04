@@ -1,0 +1,35 @@
+{
+    "program": "soulbot_chat",
+    "version": "1.0.0",
+    "scoring_scale": "1-5",
+    "threedimscore": {
+        "weighted": 5.00,
+        "grade": "S",
+        "dimensions": {
+            "C": {"score": 5.00, "weight": 0.25, "items": 7},
+            "I": {"score": 5.00, "weight": 0.45, "items": 13},
+            "D": {"score": 5.00, "weight": 0.30, "items": 10}
+        }
+    },
+    "simulation": {
+        "total": 58,
+        "green": 58,
+        "yellow": 0,
+        "red": 0,
+        "groups": {
+            "A_basic": 10,
+            "B_conversation": 15,
+            "C_quality_gate": 3,
+            "D_memory": 5,
+            "E_safety": 5,
+            "I_integration": 3,
+            "E_injection": 6,
+            "L_lifecycle": 2,
+            "K_compliance": 3,
+            "F_v160_features": 6
+        }
+    },
+    "yellow_remediation": {
+        "baseline_note": "initial"
+    }
+}

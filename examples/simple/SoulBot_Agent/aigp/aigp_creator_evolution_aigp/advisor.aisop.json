@@ -1,0 +1,364 @@
+[
+    {
+        "role": "system",
+        "content": {
+            "protocol": "AIGP V1.0.0",
+            "id": "aigp_creator.advisor",
+            "name": "AIGP Creator v1.0.0 — Advanced Advisor",
+            "version": "1.0.0",
+            "summary": "Unified advanced advisor with sub_mermaid routing. Supports ecosystem design (Pattern F), memory architecture (Pattern E), protocol alignment (MCP/A2A), and SKILL.md bidirectional conversion (skill_export/skill_import).",
+            "description": "Advanced advisor module with sub_mermaid architecture. Main routes to independent sub-graphs: orchestrate (ecosystem blueprint), memory (memory tier design), protocol (MCP/A2A alignment), skill_export (AIGP→SKILL.md), skill_import (SKILL.md→AIGP), mcp_adapter (AIGP↔MCP tool mapping), package (AIGP packaging/unpackaging with Code Trust Gate). Called by generate.aisop.json during Pattern E/F generation or protocol needs, and by main.aisop.json for SKILL.md conversion and packaging. Token estimate: ~20000 tokens per invocation (varies by advisor_type: orchestrate ~25000, memory ~20000, protocol ~15000, skill_export ~10000, skill_import ~15000).",
+            "tools": [
+                "file_system",
+                "google_search",
+                "web_browser"
+            ],
+            "parameters": {
+                "advisor_type": {
+                    "type": "string",
+                    "default": "orchestrate",
+                    "agentic_prompt": "Route: 'orchestrate' (Pattern F ecosystem), 'memory' (Pattern E memory), 'protocol' (MCP/A2A), 'skill_export' (AIGP→SKILL.md), 'skill_import' (SKILL.md→AIGP), 'mcp_adapter' (AIGP↔MCP tool mapping), 'package' (pack/unpack .aigp archives). Accept from generate.aisop.json or main.aisop.json."
+                },
+                "target_path": {
+                    "type": "string",
+                    "agentic_prompt": "Optional. Target AISOP file or directory for analysis."
+                },
+                "workspace_dir": {
+                    "type": "string",
+                    "default": "../../../aigp_store",
+                    "agentic_prompt": "Use resolved workspace_dir."
+                },
+                "quality_threshold": {
+                    "type": "string",
+                    "default": "standard",
+                    "agentic_prompt": "Pass through from generate. Used by ValidateBlueprint for integration quality check."
+                }
+            },
+            "system_prompt": "Advanced protocol and architecture advisor. Reference real standards only — never fabricate specifications. Mirror User's exact language and script variant.\nAlign: Human Sovereignty and Benefit.",
+            "fractal_exempt": "52 functional nodes distributed across 8 sub_mermaid sub-graphs (main router 8 + orchestrate 6 + memory 7 + protocol 7 + skill_export 5 + skill_import 6 + mcp_adapter 6 + package 7). Sub-graphs execute mutually exclusively: each invocation activates only main(8) + one sub-graph (max 8), with an actual maximum single-path execution of 16 nodes. The overall 52 nodes do not apply to single-file thresholds."
+        }
+    },
+    {
+        "role": "user",
+        "content": {
+            "instruction": "RUN aisop.main",
+            "aisop": {
+                "main": "graph TD\n    Start[Advisor Request] --> TypeGate{advisor_type?}\n    TypeGate -- orchestrate --> Orchestrate[aisop.orchestrate]\n    TypeGate -- memory --> Memory[aisop.memory]\n    TypeGate -- protocol --> Protocol[aisop.protocol]\n    TypeGate -- skill_export --> SkillExport[aisop.skill_export]\n    TypeGate -- skill_import --> SkillImport[aisop.skill_import]\n    TypeGate -- mcp_adapter --> MCPAdapter[aisop.mcp_adapter]\n    TypeGate -- package --> Package[aisop.package]\n    Orchestrate --> endNode((End))\n    Memory --> endNode\n    Protocol --> endNode\n    SkillExport --> endNode\n    SkillImport --> endNode\n    MCPAdapter --> endNode\n    Package --> endNode",
+                "orchestrate": "graph TD\n    Start[Ecosystem Description] --> AnalyzeScope[Analyze Scope + Select Pattern]\n    AnalyzeScope --> DecomposeComponents[Decompose into Components]\n    DecomposeComponents --> DesignHandoffs[Design Handoff Protocols]\n    DesignHandoffs --> BlueprintGenerate[Generate Blueprint]\n    BlueprintGenerate --> ValidateBlueprint[Validate Integration]\n    ValidateBlueprint -- Pass --> PresentBlueprint[Present Blueprint]\n    ValidateBlueprint -- Fail --> DesignHandoffs\n    PresentBlueprint --> endNode((End))",
+                "memory": "graph TD\n    Start[Target AISOP or Description] --> AnalyzeNeeds[Analyze Memory Needs]\n    AnalyzeNeeds --> ContextBudget[Context Engineering Budget]\n    ContextBudget --> DesignTiers[Design Memory Tiers]\n    DesignTiers --> SelectStorage[Select Storage Backend]\n    SelectStorage --> DecayPolicy[Define Decay Policy]\n    DecayPolicy --> IntegrationStub[Generate Integration Stubs]\n    IntegrationStub --> Report[Memory Blueprint Report]\n    Report --> endNode((End))",
+                "protocol": "graph TD\n    Start[Target AISOP or General Query] --> LoadAnalyze[Load and Analyze Tool Requirements]\n    LoadAnalyze --> ModeGate{Protocol Type?}\n    ModeGate -- mcp --> MCPAdvisor[MCP Advisory]\n    ModeGate -- a2a --> A2AAdvisor[A2A Agent Card Design]\n    ModeGate -- interop --> InteropAssess[Interoperability Assessment]\n    ModeGate -- all --> MCPAdvisor\n    MCPAdvisor -- all --> A2AAdvisor\n    MCPAdvisor -- mcp only --> GenerateConfigs[Generate Configs]\n    A2AAdvisor -- all --> InteropAssess\n    A2AAdvisor -- a2a only --> GenerateConfigs\n    InteropAssess --> GenerateConfigs\n    GenerateConfigs --> PresentResults[Present Results]\n    PresentResults --> endNode((End))",
+                "skill_export": "graph TD\n    Start[Target AIGP Program] --> LoadAIGP[Load and Parse AIGP]\n    LoadAIGP --> MapFields[Map AIGP to SKILL.md]\n    MapFields --> GenerateSKILL[Generate SKILL.md]\n    GenerateSKILL --> ValidateExport[Validate Output]\n    ValidateExport -- Pass --> PresentExport[Present and Save]\n    ValidateExport -- Fail --> MapFields\n    PresentExport --> endNode((End))",
+                "skill_import": "graph TD\n    Start[SKILL.md File Path] --> LoadSKILL[Load and Parse SKILL.md]\n    LoadSKILL --> MapToAIGP[Map to AIGP Fields]\n    MapToAIGP --> GenerateAIGPMd[Generate AIGP.md]\n    GenerateAIGPMd --> GenerateMain[Generate main.aisop.json]\n    GenerateMain --> ValidateImport[Validate Skeleton]\n    ValidateImport -- Pass --> PresentImport[Present and Save]\n    ValidateImport -- Fail --> MapToAIGP\n    PresentImport --> endNode((End))",
+                "mcp_adapter": "graph TD\n    Start[Target AIGP Program] --> LoadProgram[Load and Analyze]\n    LoadProgram --> MapTools[Map AIGP Tools to MCP]\n    MapTools --> GenerateServer[Generate MCP Server Wrapper]\n    GenerateServer --> NegotiateCapabilities[Capability Negotiation]\n    NegotiateCapabilities --> ValidateMapping[Validate Mapping]\n    ValidateMapping -- Pass --> PresentAdapter[Present and Save]\n    ValidateMapping -- Fail --> MapTools\n    PresentAdapter --> endNode((End))",
+                "package": "graph TD\n    PackageStart[Package Request] --> PackageModeGate{Pack or Unpack?}\n    PackageModeGate -- pack --> ValidateSource[Validate Source Program]\n    PackageModeGate -- unpack --> ExtractFiles[Extract Archive Files]\n    ValidateSource --> CollectFiles[Collect and Hash Files]\n    CollectFiles --> GenerateManifest[Generate manifest.json]\n    GenerateManifest --> CreateArchive[Create .aigp Archive]\n    CreateArchive --> endNode((End))\n    ExtractFiles --> VerifyIntegrity[Verify File Integrity]\n    VerifyIntegrity --> endNode"
+            },
+            "functions": {
+                "Start": {
+                    "step1": "Receive advisor_type, target_path, workspace_dir. Validate inputs.",
+                    "constraints": "(A) Type guard — string only. (B) Size guard — truncate >3000 chars. (C) Injection guard — strip shell metacharacters. (D) Path guard — reject any path not resolving within workspace_dir (including absolute paths outside workspace and '..' traversal). (E) Encoding guard — NFC normalize.",
+                    "Error": "Invalid -> retry -> circuit-breaker -> fallback: present advisor type menu (orchestrate/memory/protocol/skill_export/skill_import/mcp_adapter/package) -> inform."
+                },
+                "TypeGate": {
+                    "step1": "Route by advisor_type: 'orchestrate' -> aisop['orchestrate']. 'memory' -> aisop['memory']. 'protocol' -> aisop['protocol']. 'skill_export' -> aisop['skill_export']. 'skill_import' -> aisop['skill_import']. 'mcp_adapter' -> aisop['mcp_adapter']. 'package' -> aisop['package'].",
+                    "constraints": "Unknown type -> present numbered list of 7 available advisors. Exactly one route per invocation.",
+                    "Error": "Unrecognized type -> retry -> circuit-breaker -> fallback: present available advisor types menu (orchestrate/memory/protocol/skill_export/skill_import/mcp_adapter/package) -> inform."
+                },
+                "AnalyzeScope": {
+                    "step1": "Select from 5 patterns: (1) Pipeline — sequential chain. (2) Hub-and-Spoke — central router + satellites. (3) Orchestrator-Specialist — manager + workers. (4) Debate-Consensus — independent views + synthesis. (5) Blackboard — async shared knowledge base.",
+                    "step2": "Selection: manager+workers -> Orchestrator-Specialist. diverse+independent -> Debate-Consensus. shared+async -> Blackboard. sequential -> Pipeline. else -> Hub-and-Spoke.",
+                    "step3": "Check workspace for reusable existing AISOPs.",
+                    "constraints": "Ambiguous -> Orchestrator-Specialist (most versatile).",
+                    "Error": "Scope analysis fails -> retry -> circuit-breaker -> fallback: default Orchestrator-Specialist pattern -> inform."
+                },
+                "DecomposeComponents": {
+                    "step1": "Break into 2-5 components. Each: name, domain, role, complexity, key_tools, data_produced, data_consumed.",
+                    "step2": "Present as numbered cards for confirmation.",
+                    "constraints": "Each independently testable. 2-5 components max.",
+                    "Error": ">5 components -> retry -> circuit-breaker -> fallback: group related into 2-phase ecosystem -> inform."
+                },
+                "DesignHandoffs": {
+                    "step1": "Per connected pair: trigger, data_contract (field schema), direction, error_propagation.",
+                    "step2": "Verify: no orphans, no circular blocking.",
+                    "constraints": "Each error_propagation explicitly named (not 'tbd').",
+                    "Error": "Circular deps -> retry -> circuit-breaker -> fallback: suggest removal of conflicting pair -> inform."
+                },
+                "BlueprintGenerate": {
+                    "step1": "Synthesize: { ecosystem_name, pattern_type, components, handoff_matrix, deployment_topology }.",
+                    "step2": "Ecosystem Mermaid: subgraph per component.",
+                    "step3": "Topological sort for creation order.",
+                    "constraints": "Self-contained blueprint.",
+                    "Error": "Synthesis fails -> retry -> circuit-breaker -> fallback: partial blueprint with TODO -> inform."
+                },
+                "ValidateBlueprint": {
+                    "step1": "Validate: data contracts match, no orphans, valid sort. Apply quality_threshold for integration quality level.",
+                    "step2": "Interface check: A's output schema superset of B's required input for every connected pair.",
+                    "step3": "Fail -> DesignHandoffs with fix list. Pass -> PresentBlueprint. Max 2 cycles then present with warnings.",
+                    "constraints": "After 2 cycles -> present with warning banner.",
+                    "Error": "Validation incomplete -> retry -> circuit-breaker -> fallback: present with 'verify-manually' marks -> inform."
+                },
+                "PresentBlueprint": {
+                    "step1": "Present: pattern, components, Mermaid, handoff table, creation order.",
+                    "step2": "Options: (1) OK build, (2) adjust, (3) add/remove, (4) save blueprint.json.",
+                    "constraints": "Single 'OK' approval.",
+                    "Error": "Data missing -> retry -> circuit-breaker -> fallback: display available data only -> inform."
+                },
+                "AnalyzeNeeds": {
+                    "step1": "If target_path provided: read AISOP, extract domain and statefulness. If absent: gather from user: domain, cross-session needs, personalization needs.",
+                    "step2": "Classify: stateless (no memory), session-local (working only), cross-session (episodic+working), personalized (all tiers).",
+                    "step3": "Identify data sensitivity: NONE / PII-basic / PII-sensitive. Tag patterns: RAG, experience-replay, context accumulation.",
+                    "constraints": "Stateless -> recommend skipping memory advisor.",
+                    "Error": "Analysis fails -> retry -> circuit-breaker -> fallback: recommend working+episodic baseline -> inform."
+                },
+                "ContextBudget": {
+                    "step1": "Compute: context_budget = (model_max_tokens - output_tokens - system_prompt_tokens) / avg_tokens_per_item.",
+                    "step2": "Zone: ABUNDANT (>50 items), MODERATE (20-50), TIGHT (5-20), CRITICAL (<5).",
+                    "step3": "Strategy: ABUNDANT=append-only, MODERATE=rolling-window, TIGHT=summarization, CRITICAL=hierarchical compression.",
+                    "constraints": "Unknown model -> assume 8192 (conservative).",
+                    "Error": "Estimation fails -> retry -> circuit-breaker -> fallback: default TIGHT + summarization -> inform."
+                },
+                "DesignTiers": {
+                    "step1": "WORKING: context window. Schema: { current_task, recent_k_turns, tool_results_cache }.",
+                    "step2": "EPISODIC: interaction archive. Schema: { episode_id, timestamp, user_input, agent_actions, outcomes }.",
+                    "step3": "SEMANTIC: extracted knowledge. Schema: { fact_id, content, source_episodes, confidence, domain_tags }.",
+                    "constraints": "Each tier has declared storage_type.",
+                    "Error": "Design fails -> retry -> circuit-breaker -> fallback: episodic+working minimum -> inform."
+                },
+                "SelectStorage": {
+                    "step1": "Vector store options: FAISS (local, fast), ChromaDB (local+cloud, simple), Weaviate (production, hybrid search), Pinecone (managed, auto-scaling).",
+                    "step2": "Episodic log backend: JSONL (<1K episodes), SQLite (1K-100K), PostgreSQL (>100K).",
+                    "step3": "RAG pattern: simple_similarity, hybrid (vector+keyword), agentic_RAG (multi-hop).",
+                    "constraints": "Default: ChromaDB + SQLite + simple_similarity.",
+                    "Error": "Selection fails -> retry -> circuit-breaker -> fallback: ChromaDB + JSONL -> inform."
+                },
+                "DecayPolicy": {
+                    "step1": "Formula: importance(t) = recency_weight * e^(-lambda * age_days) + access_weight * log(1 + access_count) + base. Defaults: recency=0.5, lambda=0.01, access=0.3, base=0.2.",
+                    "step2": "Threshold: score < 0.15 -> decay. Actions: ARCHIVE, SUMMARIZE, DELETE.",
+                    "step3": "Schedule: nightly (general), event+nightly (regulated).",
+                    "constraints": "Regulated data: irreversible deletion after retention period.",
+                    "Error": "Decay formula fails -> retry -> circuit-breaker -> fallback: time_based=90days + summarize -> inform."
+                },
+                "IntegrationStub": {
+                    "step1": "Generate AISOP stubs: parameters (memory_store_path, memory_session_id), functions (MemoryRead, MemoryWrite, MemoryDecay).",
+                    "step2": "Generate directory structure: memory/schema.json, memory/decay_config.json.",
+                    "constraints": "Stubs are integration-ready but not runnable — mark as [IMPLEMENT]. WRITE SAFETY: atomic write (.tmp then rename). Backup existing as .bak.",
+                    "Error": "Stub generation fails -> retry -> circuit-breaker -> fallback: schema templates in text -> inform."
+                },
+                "Report": {
+                    "step1": "Memory Blueprint: { statefulness, context_budget, tiers, storage, rag_pattern, decay_policy }.",
+                    "step2": "Integration checklist: (1) implement context_manager, (2) set up storage, (3) configure decay, (4) connect to AISOP.",
+                    "step3": "Suggest: modify AISOP to add stubs, simulate memory flows.",
+                    "constraints": "Save MEMORY_BLUEPRINT_{domain}_{date}.md if workspace valid. WRITE SAFETY: atomic write (.tmp then rename). Backup existing as .bak.",
+                    "Error": "Save fails -> retry -> circuit-breaker -> fallback: display inline -> inform."
+                },
+                "LoadAnalyze": {
+                    "step1": "Read target. Extract: declared tools, tool references in steps, external dependencies.",
+                    "step2": "Classify readiness: none/mcp-candidate/a2a-candidate/full.",
+                    "constraints": "Read-only. (D) Path guard — validate target_path within workspace_dir.",
+                    "Error": "Parse fails -> retry -> circuit-breaker -> fallback: general guidance -> inform."
+                },
+                "ModeGate": {
+                    "step1": "Derive protocol_type from target_path analysis or user request: 'mcp' -> MCPAdvisor only. 'a2a' -> A2AAdvisor only. 'interop' -> InteropAssess only. 'all' (default) -> MCPAdvisor then A2AAdvisor then InteropAssess.",
+                    "constraints": "Default 'all'.",
+                    "Error": "Invalid protocol type -> retry -> circuit-breaker -> fallback: default all-protocol analysis -> inform."
+                },
+                "MCPAdvisor": {
+                    "step1": "Search for MCP servers relevant to domain. Reference MCP Streamable HTTP (2025 GA) as per STANDARD.spec_version_pinned.mcp. Research current MCP ecosystem status and available servers.",
+                    "step2": "Per server: { server_name, transport, auth, config_stub }.",
+                    "step3": "Sampling assessment if needed.",
+                    "constraints": "Reference real MCP spec versions only.",
+                    "Error": "Search fails -> retry -> circuit-breaker -> fallback: AI knowledge with 'unverified' label -> inform."
+                },
+                "A2AAdvisor": {
+                    "step1": "Identify exposable capabilities from AISOP intents and functions.",
+                    "step2": "Design A2A Agent Card: { name, version, capabilities, supportedInterfaces, authentication }.",
+                    "constraints": "No phantom capabilities. Reference real A2A spec.",
+                    "Error": "Generation fails -> retry -> circuit-breaker -> fallback: Card template -> inform."
+                },
+                "InteropAssess": {
+                    "step1": "Assess portability to: LangGraph, AutoGen, CrewAI, n8n. Per framework: compatibility, migration_effort.",
+                    "step2": "Search for latest migration patterns.",
+                    "constraints": "Advisory. Focus on gaps.",
+                    "Error": "Research fails -> retry -> circuit-breaker -> fallback: AI knowledge with 'unverified' label -> inform."
+                },
+                "GenerateConfigs": {
+                    "step1": "Generate applicable configs: mcp_config.json, agent_card.json, interop_report.md.",
+                    "step2": "Save to {workspace_dir}/{name}_aigp/protocol/. Atomic write: .tmp then rename.",
+                    "constraints": "WRITE SAFETY: backup before overwrite.",
+                    "Error": "Write fails -> retry -> circuit-breaker -> fallback: display as code blocks -> inform."
+                },
+                "PresentResults": {
+                    "step1": "Present: readiness badge, configs, interop scores.",
+                    "step2": "Suggest: apply configs, run simulate, run modify.",
+                    "constraints": "User's language.",
+                    "Error": "Incomplete -> retry -> circuit-breaker -> fallback: display available results -> inform."
+                },
+                "LoadAIGP": {
+                    "step1": "Read target AIGP program: AIGP.md + main.aisop.json + sub-modules. Extract: name, version, summary, tools, parameters, system_prompt, applicability_condition, intent_examples, discovery_keywords, pattern, trust_level, quality.",
+                    "step2": "Validate: AIGP.md exists, status != 'archived'. Build complete field inventory.",
+                    "constraints": "Read-only. (D) Path guard — validate target_path within workspace_dir, reject '..'.",
+                    "Error": "Read fails -> retry -> circuit-breaker -> fallback: request valid AIGP program path -> inform."
+                },
+                "MapFields": {
+                    "step1": "FIELD MAPPING: name→name, summary→description, system_prompt+functions→instructions (prose), parameters→input_schema (JSON Schema), tools→tools, applicability_condition.triggers+intent_examples→tags.",
+                    "step2": "GOVERNANCE METADATA EXTENSION: preserve protocol, governance_hash, trust_level, quality weighted_score, pattern, axiom_0 as metadata object in SKILL.md frontmatter.",
+                    "step3": "INSTRUCTION CONDENSATION: fold multi-stage Pipeline into sequential instruction prose. Preserve I2 safety guards as safety instructions. Remove internal Pipeline routing details (Mermaid graph references, sub-module delegation). Keep domain logic and user-facing behavior.",
+                    "constraints": "Lossy conversion — flag fields that cannot be mapped (fractal_exempt, evolution_context, sub_mermaid routing). Present mapping table for user review.",
+                    "Error": "Mapping fails -> retry -> circuit-breaker -> fallback: map available fields, mark missing as [UNMAPPED] -> inform."
+                },
+                "GenerateSKILL": {
+                    "step1": "Generate SKILL.md content: YAML frontmatter (name, description, version, author, tags, input_schema, tools, metadata) + Markdown body (instructions prose + usage examples).",
+                    "step2": "Append AIGP provenance comment: '<!-- Exported from AIGP program: {name} v{version} | protocol: AIGP V1.0.0 | governance_hash: {hash} -->'.",
+                    "constraints": "Output must be valid SKILL.md per L1 (YAML frontmatter) + L2 (Markdown body) + L3 (optional resources) architecture.",
+                    "Error": "Generation fails -> retry -> circuit-breaker -> fallback: generate minimal SKILL.md with name+description+instructions only -> inform."
+                },
+                "ValidateExport": {
+                    "step1": "Validate SKILL.md: (1) required fields present (name, description, instructions), (2) input_schema valid JSON Schema if present, (3) instructions contain no raw JSON fragments or Mermaid graph syntax, (4) metadata contains governance fields (protocol, axiom_0).",
+                    "step2": "Fail -> MapFields with fix list. Max 2 cycles then present with warnings.",
+                    "constraints": "After 2 cycles -> present with warning banner listing validation failures.",
+                    "Error": "Validation error -> retry -> circuit-breaker -> fallback: present with 'verify-manually' marks -> inform."
+                },
+                "PresentExport": {
+                    "step1": "Present: SKILL.md preview, field mapping table (AIGP field → SKILL.md field → status), lossy conversion highlights (fields lost or simplified). ROUND-TRIP WARNING: display explicit warning: 'WARNING: SKILL.md round-trip is lossy. The following AIGP structures are NOT preserved: fractal_exempt annotations, sub_mermaid routing, evolution_context history, multi-file module structure, Mermaid graph definitions, per-function Error handlers, and pipeline-specific data contracts. Re-importing produces a simplified Pattern A skeleton.'",
+                    "step2": "Save to {workspace_dir}/{name}_aigp/SKILL.md. WRITE SAFETY: atomic write (.tmp then rename). Backup existing as .bak.",
+                    "step3": "Suggest: (1) review and edit SKILL.md, (2) publish to skill registry, (3) re-import to verify round-trip fidelity.",
+                    "constraints": "User's language. Display diff if overwriting existing SKILL.md.",
+                    "Error": "Save fails -> retry -> circuit-breaker -> fallback: display SKILL.md content inline -> inform."
+                },
+                "LoadSKILL": {
+                    "step1": "Read SKILL.md file. Parse YAML frontmatter (L1) + Markdown body (L2). Extract: name, description, version, author, instructions, input_schema, tools, tags, metadata.",
+                    "step2": "Detect AIGP provenance metadata: if metadata contains protocol/governance_hash/trust_level, mark as AIGP-originated (enables field restoration). If no provenance, treat as external SKILL.md.",
+                    "constraints": "Read-only. (D) Path guard — validate target_path, reject '..'.",
+                    "Error": "Parse fails -> retry -> circuit-breaker -> fallback: request valid SKILL.md path -> inform."
+                },
+                "MapToAIGP": {
+                    "step1": "FIELD MAPPING: name→name (sanitize: lowercase, underscores, alphanumeric), description→summary, instructions→system_prompt + functions (see step2), input_schema→parameters, tools→tools, tags→discovery_keywords.",
+                    "step2": "INSTRUCTION DECOMPOSITION: analyze instructions text to identify distinct operation intents. For each intent, create a function skeleton with step1 (from instructions), constraints (inferred), Error (standard pattern). Map sequential instructions to Mermaid graph nodes.",
+                    "step3": "GOVERNANCE DEFAULTS: populate 6 required governance fields with standard values (protocol='AIGP V1.0.0', authority='aigp.dev', seed='aisop.dev', executor='user', axiom_0='Human_Sovereignty_and_Benefit', governance_mode='NORMAL'). If AIGP provenance detected, restore original governance values from metadata.",
+                    "step4": "CONSERVATIVE DEFAULTS: status='draft', trust_level=T2 (conservative for untrusted content), pattern='A' (single-file skeleton), version='1.0.0'.",
+                    "constraints": "Sanitize name for filesystem safety. Preserve all original SKILL.md data — nothing lost in import.",
+                    "Error": "Mapping fails -> retry -> circuit-breaker -> fallback: map available fields, use defaults for missing -> inform."
+                },
+                "GenerateAIGPMd": {
+                    "step1": "Generate AIGP.md with 12 required frontmatter fields: 6 governance (protocol, authority, seed, executor, axiom_0, governance_mode) + 6 project (name, version, pattern, summary, tools, modules).",
+                    "step2": "Generate body sections: governance declaration, feature overview (from instructions), usage (from intent_examples or instructions), applicability condition (from tags/triggers).",
+                    "step3": "Set pattern='A', modules=[{ id: '{name}.main', file: 'main.aisop.json', nodes: (computed after generation) }]. Append closing stamp: 'Align: Human Sovereignty and Benefit. Version: AIGP V1.0.0.'",
+                    "constraints": "All 12 frontmatter fields required. Body in user's language where possible.",
+                    "Error": "Generation fails -> retry -> circuit-breaker -> fallback: generate minimal AIGP.md with required fields only -> inform."
+                },
+                "GenerateMain": {
+                    "step1": "INTENT ANALYSIS: analyze decomposed instructions from MapToAIGP to identify distinct operation intents. Generate NLU routing Mermaid graph: Start → NLU → intent branches → endNode.",
+                    "step2": "FUNCTION GENERATION: for each Mermaid node, generate function skeleton: step1 (from instructions), I2 guards in Start node (type, size, injection, path, encoding), Error field (standard retry → circuit-breaker → fallback pattern).",
+                    "step3": "Update AIGP.md modules[0].nodes with actual node count. Generate valid main.aisop.json with system content (protocol, id, name, version, summary, tools, parameters, system_prompt) + user content (instruction, aisop.main Mermaid, functions).",
+                    "constraints": "Generated JSON must be valid. Mermaid↔functions must be synchronized. Maximum 15 nodes for Pattern A.",
+                    "Error": "Generation fails -> retry -> circuit-breaker -> fallback: generate minimal 3-node skeleton (Start→Process→End) -> inform."
+                },
+                "ValidateImport": {
+                    "step1": "Lightweight validation: (1) AIGP.md has 12 required frontmatter fields, (2) main.aisop.json is valid JSON, (3) Mermaid↔functions synchronized (every Mermaid node has function definition), (4) Start node has I2 guards, (5) all non-Start/endNode functions have Error field.",
+                    "step2": "Fail -> MapToAIGP with fix list. Max 2 cycles then present with warnings.",
+                    "constraints": "After 2 cycles -> present with warning banner. This is skeleton validation only — recommend full Validate pipeline for production use.",
+                    "Error": "Validation error -> retry -> circuit-breaker -> fallback: present with 'verify-manually' marks -> inform."
+                },
+                "PresentImport": {
+                    "step1": "Present: field mapping table (SKILL.md field → AIGP field → status), AIGP.md preview, main.aisop.json preview.",
+                    "step2": "Create directory {workspace_dir}/{name}_aigp/ and save AIGP.md + main.aisop.json. WRITE SAFETY: atomic write (.tmp then rename). Backup existing as .bak.",
+                    "step3": "Suggest: (1) run Validate pipeline for full quality check, (2) run Simulate for path coverage, (3) Evolve to add more features, (4) export back to SKILL.md to verify round-trip.",
+                    "constraints": "User's language. If directory exists, warn before overwriting.",
+                    "Error": "Save fails -> retry -> circuit-breaker -> fallback: display all generated content inline -> inform."
+                },
+                "LoadProgram": {
+                    "step1": "Read target AIGP program directory. Parse AIGP.md frontmatter: extract tools[], trust_level, governance_hash, version, pattern.",
+                    "step2": "For each tool in tools[]: extract annotations (read_only, destructive, idempotent, open_world). If tool has mcp_server field, record as external MCP dependency.",
+                    "step3": "Scan all .aisop.json modules: extract parameters with json_schema (from P2-4), function definitions, side_effects. Build tool_capability_map: { tool_name: { modules_using, operations, annotations } }.",
+                    "constraints": "Read-only. (D) Path guard — reject paths outside workspace_dir.",
+                    "Error": "Read fails -> retry -> circuit-breaker -> fallback: minimal analysis from AIGP.md only -> inform."
+                },
+                "MapTools": {
+                    "step1": "AIGP-TO-MCP MAPPING: for each tool in tool_capability_map, apply interop.mcp_tool_mapping rules: (a) tool.name → MCP Tool.name, (b) annotations.read_only → readOnlyHint, annotations.destructive → destructiveHint, annotations.idempotent → idempotentHint, annotations.open_world → openWorldHint, (c) module.parameters json_schema → MCP Tool.inputSchema, (d) inject AIGP governance extension: { aigp_protocol: 'AIGP V1.0.0', trust_level, governance_hash }.",
+                    "step2": "MCP-TO-AIGP REVERSE MAPPING: if target has mcp_server references in tools[], map external MCP Tool metadata back to AIGP format: MCP Tool.name → tool.name, MCP inputSchema → parameters, MCP annotations.*Hint → AIGP annotations.*.",
+                    "step3": "Build capability_summary: list of high-level capabilities derived from mapped tools (e.g., 'file_read', 'file_write', 'web_search', 'data_query').",
+                    "constraints": "Mapping is deterministic — same input always produces same output. Preserve all AIGP governance metadata in mapping.",
+                    "Error": "Mapping fails -> retry -> circuit-breaker -> fallback: partial mapping with unmapped tools flagged -> inform."
+                },
+                "GenerateServer": {
+                    "step1": "Generate mcp_server_config.json: { server_name (from AIGP name), server_version (from AIGP version), transport ('streamable-http' default), tools (from MapTools output), aigp_source: { program_id, version, trust_level, governance_hash } }.",
+                    "step2": "Generate implementation stub: for each mapped tool, create handler template that delegates to corresponding AIGP module function. Include AIGP governance checks in each handler (trust_level verification, governance_hash validation).",
+                    "step3": "Generate MCP client configuration snippet for consuming this server from Claude Desktop, Cursor, or other MCP hosts.",
+                    "constraints": "Generated code is template/stub only — not executable without runtime implementation. Atomic write (.tmp then rename).",
+                    "Error": "Generation fails -> retry -> circuit-breaker -> fallback: generate config only without stubs -> inform."
+                },
+                "NegotiateCapabilities": {
+                    "step1": "Enumerate offered_capabilities: list all capabilities the AIGP program can expose as MCP tools. For each: { name, description, inputSchema, outputSchema (from json_schema), annotations }.",
+                    "step2": "Enumerate required_capabilities: if AIGP program consumes external MCP Servers (tools[].mcp_server), list required capabilities from each external server.",
+                    "step3": "Compute negotiation_result: { offered: [capability], required: [capability], compatibility_score: number (0-1), trust_compatible: boolean (T2 programs cannot offer destructive tools), warnings: [string] }.",
+                    "constraints": "Advisory only. Does not modify any files.",
+                    "Error": "Negotiation fails -> retry -> circuit-breaker -> fallback: list offered only without negotiation -> inform."
+                },
+                "ValidateMapping": {
+                    "step1": "COMPLETENESS CHECK: verify every AIGP tool has a corresponding MCP mapping. Flag unmapped tools.",
+                    "step2": "ANNOTATION CONSISTENCY: for each mapped tool, verify AIGP annotation ↔ MCP Hint consistency (read_only ↔ readOnlyHint, etc.). Cross-reference with I12 check results.",
+                    "step3": "TRUST BOUNDARY CHECK: verify T2 programs do not expose destructive tools. Verify open_world tools have AT3 mitigation. Verify trust_level in governance extension matches AIGP.md.",
+                    "step4": "SCHEMA VALIDATION: verify MCP inputSchema matches AIGP json_schema for each tool parameter.",
+                    "constraints": "Validation failure routes back to MapTools for correction. Max 3 validation cycles.",
+                    "Error": "Validation fails -> retry -> circuit-breaker -> fallback: present mapping with validation warnings -> inform."
+                },
+                "PresentAdapter": {
+                    "step1": "Present mapping summary: table of AIGP tool → MCP Tool with annotation mapping. Show compatibility matrix. Display negotiation_result with offered/required/score.",
+                    "step2": "Present generated artifacts: mcp_server_config.json path, stub code path, client config snippet.",
+                    "step3": "Save all artifacts to target_aigp_dir/protocol/ directory. Atomic write (.tmp then rename). Backup existing protocol/ files as .bak.",
+                    "constraints": "WRITE SAFETY: atomic write + backup. User confirmation before overwriting existing protocol/ files.",
+                    "Error": "Save fails -> retry -> circuit-breaker -> fallback: display all artifacts inline as code blocks -> inform."
+                },
+                "PackageStart": {
+                    "step1": "Receive package_mode ('pack' or 'unpack'), target_path, workspace_dir. Pack: target_path is AIGP program directory. Unpack: target_path is .aigp file path.",
+                    "constraints": "(A) Type guard — string only. (B) Size guard — pack: program dir < 10MB total; unpack: .aigp file < 10MB. (C) Injection guard — strip shell metacharacters. (D) Path guard — reject paths outside workspace_dir. (E) Encoding guard — NFC normalize.",
+                    "Error": "Invalid inputs -> retry -> circuit-breaker -> fallback: present pack/unpack mode menu -> inform."
+                },
+                "PackageModeGate": {
+                    "step1": "Route by package_mode: 'pack' -> ValidateSource. 'unpack' -> ExtractFiles. Default: 'pack' if target_path is a directory, 'unpack' if target_path ends with '.aigp'.",
+                    "constraints": "Exactly one route. Auto-detect from path if mode not explicit.",
+                    "Error": "Unknown mode -> retry -> circuit-breaker -> fallback: default to pack mode -> inform."
+                },
+                "ValidateSource": {
+                    "step1": "Read target program directory. Verify AIGP.md exists. Verify status != 'archived'. Verify governance_hash in AIGP.md is non-null (64-char lowercase hex).",
+                    "step2": "Scan for all .aisop.json files. Verify each is valid JSON. Verify all files referenced in AIGP.md modules[] exist on disk.",
+                    "step3": "Recompute governance_hash per PL14 (SHA-256 of .aisop.json files in ASCII alphabetical order, CRLF→LF). Compare with AIGP.md governance_hash. MISMATCH → WARNING: 'Governance hash mismatch. Recompute before packaging?' Offer to update or proceed with warning.",
+                    "constraints": "Read-only validation. (D) Path guard — all paths within workspace_dir. Max 50 files.",
+                    "Error": "Validation fails -> retry -> circuit-breaker -> fallback: report issues, offer proceed with warnings -> inform."
+                },
+                "CollectFiles": {
+                    "step1": "Enumerate all files in program directory: *.aisop.json, AIGP.md, AIGP_Protocol.md (if present). For each file: compute SHA-256, record size_bytes. For Pattern G programs with tool_dirs/: also enumerate all files under each tool_dirs[].path directory (python-tools/, ts-tools/, go-tools/, rust-tools/, shell-tools/, mcp-tools/, etc.). Include mcp_server.json, agent_card.json, and all tool implementation files. Apply binary size limits per STANDARD.security.zip_slip_protection: 100MB per file, 500MB total for tool_dirs/. CODE TRUST PRE-PACK: before archiving, if Pattern G: (1) verify trust_level >= T3, (2) recompute file_hashes for all tool_dirs/ files, (3) verify mcp_server.json exposed_tools match actual tool implementations, (4) log code_trust_validation result in manifest.json code_trust block.",
+                    "step2": "Build files inventory: [{ path: relative_path, sha256: hash, size_bytes: size }]. Compute total_size_bytes.",
+                    "constraints": "Read-only. Max total 10MB. Skip hidden files (.*), skip .version_history/ directory.",
+                    "Error": "File read fails -> retry -> circuit-breaker -> fallback: partial inventory with missing files flagged -> inform."
+                },
+                "GenerateManifest": {
+                    "step1": "Extract from AIGP.md: name, version, author (from identity.publisher), pattern, trust_level.level, quality weighted_score and grade, capabilities (if present), registry_uri (if present). Build manifest per STANDARD.data_contracts.aigp_package.manifest.",
+                    "step2": "Assemble aigp_package: { manifest, files (from CollectFiles), governance_hash (from AIGP.md), total_size_bytes, package_format_version: '1.0.0' }. For Pattern G packages: manifest includes tool_dirs_metadata { directories: [list of tool_dirs paths], file_count, total_size_bytes, runtime_versions: {python, node, go, rust as detected} } to enable recipient environment preparation during unpack. ENDPOINT GENERATION: if mcp_server.json present, add endpoints.mcp = 'stdio://./' + mcp_server.json relative path. If agent_card.json present, add endpoints.a2a = 'soulbot://agents/' + program_id. Include code_trust block: { min_trust_level: declared_trust_level, file_hashes_included: true }.",
+                    "step3": "Validate against STANDARD.data_contracts.aigp_package.json_schema. Write manifest.json to temp location.",
+                    "constraints": "WRITE SAFETY: atomic write (.tmp then rename). manifest.json must be complete and valid.",
+                    "Error": "Generation fails -> retry -> circuit-breaker -> fallback: minimal manifest with name+version+files only -> inform."
+                },
+                "CreateArchive": {
+                    "step1": "Create .aigp archive (ZIP format) containing: manifest.json at root, all collected files preserving relative paths. Name: {name}_v{version}.aigp.",
+                    "step2": "Verify archive: read back manifest.json, verify file count matches inventory.",
+                    "step3": "Present result: archive location, file inventory table, governance_hash. Suggest: (1) publish to registry, (2) share archive, (3) verify with unpack.",
+                    "constraints": "WRITE SAFETY: atomic write (.tmp then rename). Backup existing .aigp as .bak. Archive in workspace_dir root.",
+                    "Error": "Archive creation fails -> retry -> circuit-breaker -> fallback: output manifest.json + file list as text -> inform."
+                },
+                "ExtractFiles": {
+                    "step1": "Read .aigp archive. Extract manifest.json first. Parse and validate manifest against STANDARD.data_contracts.aigp_package.json_schema.",
+                    "step2": "Extract all files to {workspace_dir}/{manifest.name}_aigp/ directory. Preserve relative paths.",
+                    "constraints": "WRITE SAFETY: if target dir exists, prompt user before overwriting. Atomic write per file. ZIP SLIP PREVENTION: reject entries with '..' or absolute paths. Max 50 files, 10MB total.",
+                    "Error": "Extraction fails -> retry -> circuit-breaker -> fallback: list archive contents without extracting -> inform."
+                },
+                "VerifyIntegrity": {
+                    "step1": "For each file in manifest.files[]: compute SHA-256 of extracted file, compare with manifest sha256. Build verification_report: { verified, failed, failures[] }. CODE TRUST POST-UNPACK: after hash verification, trigger Code Trust Gate: (1) verify file_hashes match .checksums for tool_dirs/ files, (2) verify trust_level >= manifest.code_trust.min_trust_level, (3) verify runtime availability for each tool_dirs type. Gate FAIL → BLOCK with 'Code Trust Gate failed: {reason}'.",
+                    "step2": "Verify governance_hash: recompute PL14 hash from extracted .aisop.json files, compare with manifest.governance_hash. MISMATCH → RED: 'GOVERNANCE HASH MISMATCH — package may be tampered. Do not execute without investigation.'",
+                    "step3": "Present: PASSED (all hashes match) or FAILED (mismatches found). If PASSED suggest: (1) validate, (2) simulate, (3) evolve program.",
+                    "constraints": "Read-only. Never auto-execute unpacked programs. governance_hash mismatch is security-critical.",
+                    "Error": "Verification fails -> retry -> circuit-breaker -> fallback: report partial verification -> inform."
+                }
+            }
+        }
+    }
+]
