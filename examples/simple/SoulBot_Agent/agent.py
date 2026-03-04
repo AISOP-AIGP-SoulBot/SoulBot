@@ -22,6 +22,7 @@ from soulbot.agents import LlmAgent
 
 _AGENT_DIR = Path(__file__).parent
 _AIGP_DIR = (_AGENT_DIR / os.getenv("WORKSPACE_DIR", "aigp")).resolve()
+_AIGP_STORE_DIR = (_AGENT_DIR.parent / "aigp_store").resolve()
 
 # Main AISOP: lives at agent root (alongside agent.py)
 _main_path = _AGENT_DIR / "main.aisop.json"
@@ -145,8 +146,9 @@ def _dynamic_instruction(_ctx) -> str:
     if _main:
         parts.append(f"[LOADED AISOP: main.aisop.json]\n```json\n{_main}\n```")
 
-    # AIGP directory path
+    # AIGP directory paths
     parts.append(f"[AIGP Directory]\n{_AIGP_DIR}")
+    parts.append(f"[AIGP Store Directory]\n{_AIGP_STORE_DIR}\nWhen creating new AIGP programs, always save to this directory.")
 
     # AIGP package registry (auto-generated from aigp/ directory)
     registry = _get_aigp_registry()
